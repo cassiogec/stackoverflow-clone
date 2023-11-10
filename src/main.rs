@@ -4,6 +4,7 @@ extern crate rocket;
 mod cors;
 mod handlers;
 mod models;
+mod persistance;
 
 use cors::*;
 use dotenvy::{self, dotenv};
@@ -19,7 +20,7 @@ async fn rocket() -> _ {
         .max_connections(5)
         .connect(&std::env::var("DATABASE_URL").expect("DATABASE_URL must be set."))
         .await
-        .expect("Failed to create Postgres connection pool");
+        .expect("Failed to create Postgres connection pool!");
 
     rocket::build()
         .mount(

@@ -56,7 +56,6 @@ impl AnswersDao for AnswersDaoImpl {
             e => DBError::Other(Box::new(e)),
         })?;
 
-        // Populate the AnswerDetail fields using `record`.
         Ok(AnswerDetail {
             answer_uuid: record.answer_uuid.to_string(),
             question_uuid: record.question_uuid.to_string(),
@@ -70,41 +69,30 @@ impl AnswersDao for AnswersDaoImpl {
             DBError::InvalidUUID(format!("Could not parse answer UUID: {}", answer_uuid))
         })?;
 
-        sqlx::query!(
-            r#"
-            DELETE FROM answers WHERE answer_uuid = $1
-            "#,
-            uuid,
-        )
-        .fetch_one(&self.db)
-        .await
-        .map_err(|e: sqlx::Error| DBError::Other(Box::new(e)))?;
+        sqlx::query!("DELETE FROM answers WHERE answer_uuid = $1", uuid)
+            .execute(&self.db)
+            .await
+            .map_err(|e| DBError::Other(Box::new(e)))?;
 
         Ok(())
     }
 
     async fn get_answers(&self, question_uuid: String) -> Result<Vec<AnswerDetail>, DBError> {
         let uuid = sqlx::types::Uuid::parse_str(&question_uuid).map_err(|_| {
-            DBError::InvalidUUID(format!("Could not parse answer UUID: {}", question_uuid))
+            DBError::InvalidUUID(format!("Could not parse question UUID: {}", question_uuid))
         })?;
 
-        let records = sqlx::query!(
-            r#"
-                SELECT * FROM answers WHERE question_uuid = $1
-            "#,
-            uuid,
-        )
-        .fetch_all(&self.db)
-        .await
-        .map_err(|e: sqlx::Error| DBError::Other(Box::new(e)))?;
+        let records = sqlx::query!("SELECT * FROM answers WHERE question_uuid = $1", uuid)
+            .fetch_all(&self.db)
+            .await
+            .map_err(|e| DBError::Other(Box::new(e)))?;
 
-        // Iterate over `records` and map each record to a `AnswerDetail` type
         let answers = records
             .iter()
             .map(|r| AnswerDetail {
                 answer_uuid: r.answer_uuid.to_string(),
                 question_uuid: r.question_uuid.to_string(),
-                content: r.content.to_string(),
+                content: r.content.clone(),
                 created_at: r.created_at.to_string(),
             })
             .collect();
