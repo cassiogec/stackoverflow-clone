@@ -21,14 +21,6 @@ async fn rocket() -> _ {
         .await
         .expect("Failed to create Postgres connection pool");
 
-    let recs = sqlx::query!("SELECT * FROM questions")
-        .fetch_all(&pool)
-        .await
-        .unwrap();
-
-    info!("********* Question Records *********");
-    info!("{:?}", recs);
-
     rocket::build()
         .mount(
             "/",
