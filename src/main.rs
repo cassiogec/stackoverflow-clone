@@ -1,15 +1,22 @@
 #[macro_use]
 extern crate rocket;
 
+#[macro_use]
+extern crate log;
+
+extern crate pretty_env_logger;
+
+use dotenvy::dotenv;
+
+use sqlx::postgres::PgPoolOptions;
+
 mod cors;
 mod handlers;
 mod models;
 mod persistance;
 
 use cors::*;
-use dotenvy::{self, dotenv};
 use handlers::*;
-use sqlx::postgres::PgPoolOptions;
 
 #[launch]
 async fn rocket() -> _ {
