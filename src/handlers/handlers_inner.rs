@@ -20,10 +20,9 @@ impl HandlerError {
 
 pub async fn create_question(
     question: Question,
-    // We are using a trait object here so that inner handlers do not depend on concrete DAO implementations
     questions_dao: &Box<dyn QuestionsDao + Sync + Send>,
 ) -> Result<QuestionDetail, HandlerError> {
-    let question = questions_dao.create_question(question).await; // create question using `questions_dao`
+    let question = questions_dao.create_question(question).await;
 
     question.map_err(|e: DBError| {
         error!("{:?}", e);

@@ -8,6 +8,7 @@ extern crate pretty_env_logger;
 
 use dotenvy::dotenv;
 
+use persistance::{answers_dao::AnswersDaoImpl, questions_dao::QuestionsDaoImpl};
 use sqlx::postgres::PgPoolOptions;
 
 mod cors;
@@ -29,6 +30,9 @@ async fn rocket() -> _ {
         .await
         .expect("Failed to create Postgres connection pool!");
 
+    let questions_dao = QuestionsDaoImpl::new(pool.clone());
+    let answers_dao = AnswersDaoImpl::new(pool.clone());
+
     rocket::build()
         .mount(
             "/",
@@ -42,4 +46,6 @@ async fn rocket() -> _ {
             ],
         )
         .attach(CORS)
+        .manage(Box::new(questions_dao))
+        .manage(Box::new(answers_dao))
 }
